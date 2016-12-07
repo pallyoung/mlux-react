@@ -1,0 +1,28 @@
+{
+  "name": "react-mlux-binder",
+  "version": "0.0.1",
+  "description": "mlux binder auto bind view to store",
+  "main": "Binder.js",
+  "scripts": {
+    "test": "null"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pallyoung/react-mlux-binder.git"
+  },
+  "peerDependencies": {
+    "react": "*",
+    "mlux":"*"
+  },
+  "keywords": [
+    "mlux",
+    "binder",
+    "react"
+  ],
+  "author": "Spencer Ye",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/pallyoung/react-mlux-binder/issues"
+  },
+  "homepage": "https://github.com/pallyoung/react-mlux-binder#readme"
+}
