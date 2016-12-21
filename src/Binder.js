@@ -1,27 +1,34 @@
 'use strict'
+//@flow
+import mlux, { equlas, isArray, isFunction } from 'mlux';
+
 import React, { Component, PropTypes } from 'react';
-import {equlas,isArray,isFunction} from 'mlux';
 var id = 1;
 const PERFIX = 'BINDER_STORE_';
 
-function getId() {
+function getId(): string {
     id++;
     return PERFIX + id;
 }
 
 export default class Binder extends Component {
-    constructor(...props) {
+    constructor(...props: any[]) {
         super(...props);
         this.stores = this._getStoreFromProps(this.props);
         this.listener = () => {
             clearTimeout(this.timeout);
             this.timeout = setTimeout(() => this.mounted && this.forceUpdate(), 10);
         };
-        this.mounted;
+        this.mounted = false;
         this.timeout;
         this.listenerTokens = {};
     }
-    _getStoreFromProps(props) {
+    stores: Object;
+    listener: Function;
+    mounted: boolean;
+    timeout: number;
+    listenerTokens: Object;
+    _getStoreFromProps(props: Object): Object {
         var stores = {};
         if (isArray(props.bind)) {
             props.bind.forEach(function (s) {
@@ -33,14 +40,14 @@ export default class Binder extends Component {
         return stores;
 
     }
-    _bind() {
+    _bind(): void {
         var stores = this.stores;
         this.listenerTokens = {};
         for (let s in stores) {
             this.listenerTokens[s] = stores[s].addListener('change', this.listener);
         }
     }
-    _unbind() {
+    _unbind(): void {
         var stores = this.stores;
         for (let s in stores) {
             stores[s].removeListener(this.listenerTokens[s]);
@@ -48,45 +55,74 @@ export default class Binder extends Component {
         this.listenerTokens = {}
     }
 
-    componentWillReceiveProps(nextProps) {
-        
+    componentWillReceiveProps(nextProps: Object): void {
+
     }
-    componentDidMount() {
+    componentDidMount(): void {
         this.mounted = true
         this._bind();
     }
-    componentWillUnmount() {
+    componentWillUnmount(): void {
         this.mounted = false;
         this._unbind();
     }
-    render() {
+    render(){
         return this.props.render()
     }
+    static propTypes = {
+        bind: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
+        render: PropTypes.func
+    }
+    static createElement:createElement
+    static cloneElement:cloneElement
+    static createClass:createClass
 }
 
-Binder.propTypes = {
-    bind: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
-    render: PropTypes.func
+function createElement(ReactComponent:Class<React.Component<*,*,*>>, bind: Array<Object>, getProps?: Function): React.Element<*> {
+    return <Binder 
+            bind={bind} 
+            render={() => {
+                var props;
+                if (getProps&&isFunction(getProps)) {
+                    props = getProps() || {}
+                }
+                return <ReactComponent {...props } />}} />
 }
-Binder.createElement = function (Component, bind, props) {
-    props = props || {};
-    return <Binder bind={bind} render={() => <Component {...props} />} />;
+function cloneElement(element: React.Element<*>, bind: Array<Object>, getProps?: Function): React.Element<*> {
+    return <Binder 
+            bind={bind} 
+            render={() => {
+                var props;
+                if (getProps&&isFunction(getProps)) {
+                    props = getProps() || {}
+                }
+                return React.cloneElement(element,props)}} />
+}
 
-}
-Binder.createClass = function (Component) {
+function createClass(ReactComponent:Class<React.Component<*,*,*>>):Class<*> {
     return React.createClass({
-        render: function () {
-            var bind = this.props.bind || [];
+        propTypes : {
+            bind: PropTypes.array,
+            getProps: PropTypes.func
+        },
+        getDefaultProps : function () {
+            return {
+                bind: []
+            }
+        },
+        render : function () {
+            var bind = this.props.bind;
             var getProps = this.props.getProps;
-            return <Binder 
-                    bind={bind}
-                    render={() =>{
-                         var props = {};
-                         var props = {};
-                         if (isFunction(getProps)) {
-                            props = getProps() || {}
-                         }
-                        return  <Component {...props} />}} />
+            return <Binder
+                bind={bind}
+                render={() => {
+                    var props;
+                    if (getProps && isFunction(getProps)) {
+                        props = getProps () || {}
+                    }
+                    return <Component {...props} />
+                } } />
         }
     })
 }
+

@@ -1,0 +1,13 @@
+[include]
+
+[ignore]
+; ignore module source to prefer declaration
+; annotated with `@flow` but have errors
+; large dirs that are not imported
+<PROJECT_ROOT>/docs/.*
+
+[options]
+esproposal.class_static_fields=enable
+experimental.const_params=true
+experimental.strict_type_args=true
+module.use_strict=true

@@ -4,7 +4,8 @@
   "description": "mlux binder auto bind view to store",
   "main": "Binder.js",
   "scripts": {
-    "test": "null"
+    "test": "null",
+    "flow": "flow; test $? -eq 0 -o $? -eq 2"
   },
   "repository": {
     "type": "git",
@@ -12,7 +13,7 @@
   },
   "peerDependencies": {
     "react": "*",
-    "mlux":"*"
+    "mlux": "*"
   },
   "keywords": [
     "mlux",
@@ -24,5 +25,9 @@
   "bugs": {
     "url": "https://github.com/pallyoung/react-mlux-binder/issues"
   },
-  "homepage": "https://github.com/pallyoung/react-mlux-binder#readme"
+  "homepage": "https://github.com/pallyoung/react-mlux-binder#readme",
+  "devDependencies": {
+    "babel-plugin-transform-flow-strip-types": "^6.21.0",
+    "mlux": "^0.2.0"
+  }
 }
