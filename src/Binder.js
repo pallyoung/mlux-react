@@ -73,12 +73,11 @@ export default class Binder extends Component {
         bind: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
         render: PropTypes.func
     }
-    static createElement:createElement
-    static cloneElement:cloneElement
-    static createClass:createClass
+    static render = render
+    static createClass = createClass
 }
 
-function createElement(ReactComponent:Class<React.Component<*,*,*>>, bind: Array<Object>, getProps?: Function): React.Element<*> {
+function render(ReactComponent:Class<React.Component<*,*,*>>, bind: Array<Object>, getProps?: Function): React.Element<*> {
     return <Binder 
             bind={bind} 
             render={() => {

@@ -30,8 +30,7 @@
 
 * [Binder](#binder)
     * [Props](#props)
-    * [Binder.createElement](#bindercreateelement)
-    * [Binder.cloneElement](#bindercloneelement)
+    * [Binder.render](#binderrender)
     * [Binder.createClass](#bindercreateclass)
 
 ### Binder
@@ -47,13 +46,13 @@ Binder组件通过bind属性来自动监测store数据变化，并通过render�
 //当testStore的值发生改变的时，Text组件中的内容将会自动更新。
 <Binder bind = {[testStore] render = {()=><Text>{testStore.value}</Text>}}/>
 ```
-#### Binder.createElement
+#### Binder.render
 
-createElement方法将返回一个React Element元素。
+render方法返回React Element;
 
 ```javascript
 //api
-Binder.createElement(ReactComponent:Class<React.Component<*,*,*>>, bind: Array<Object>, getProps?: Function): React.Element<*>;
+Binder.render(ReactComponent:Class<React.Component<*,*,*>>, bind: Array<Object>, getProps?: Function): React.Element<*>;
 ```
 
 ```javascript
@@ -66,39 +65,13 @@ class A extends Component {
 
 class B extends Component {
     render:() => {
-        return Binder.createElement(A,[store],getProps(){
+        return Binder.render(A,[store],getProps(){
             return {name:store.name}
         });
     }
 }
 ```
 
-
-#### Binder.cloneElement
-
-createElement方法同样将返回一个React Element元素。不同的是，第一个参数是一个React Element;
-
-```javascript
-//api
-Binder.cloneElement(element: React.Element<*>, bind: Array<Object>, getProps?: Function): React.Element<*>;
-```
-
-```javascript
-//demo
-class A extends Component {
-    render:()=>{
-        return <Text>name:{this.props.name},value:{store.value}</Text>
-    }
-}
-
-class B extends Component {
-    render:() => {
-        return Binder.cloneElement(<A />,[store],getProps(){
-            return {name:store.name}
-        });
-    }
-}
-```
 
 
 #### Binder.createClass
