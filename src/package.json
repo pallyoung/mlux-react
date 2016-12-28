@@ -1,6 +1,6 @@
 {
   "name": "react-mlux-binder",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "mlux binder auto bind view to store",
   "main": "Binder.js",
   "scripts": {
