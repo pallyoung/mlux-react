@@ -101,7 +101,7 @@ function cloneElement(element: React.Element<*>, bind: Array<Object>, getProps?:
 function createClass(ReactComponent:Class<React.Component<*,*,*>>):Class<*> {
     return React.createClass({
         propTypes : {
-            bind: PropTypes.array,
+            bind: PropTypes.oneOfType([PropTypes.array,PropTypes.object]),
             getProps: PropTypes.func
         },
         getDefaultProps : function () {
@@ -119,7 +119,7 @@ function createClass(ReactComponent:Class<React.Component<*,*,*>>):Class<*> {
                     if (getProps && isFunction(getProps)) {
                         props = getProps () || {}
                     }
-                    return <Component {...props} />
+                    return <ReactComponent {...props} />
                 } } />
         }
     })
