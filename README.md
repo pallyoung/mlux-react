@@ -44,7 +44,7 @@ Binder组件通过bind属性来自动监测store数据变化，并通过render�
 
 ```javascript
 //当testStore的值发生改变的时，Text组件中的内容将会自动更新。
-<Binder bind = {[testStore] render = {()=><Text>{testStore.value}</Text>}}/>
+<Binder bind = {[testStore]} render = {()=><Text>{testStore.value}</Text>}}/>
 ```
 #### Binder.render
 
