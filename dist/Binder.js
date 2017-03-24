@@ -2202,33 +2202,43 @@ function getId() {
 }
 
 var StorePublisher = function () {
-    function StorePublisher() {
+    function StorePublisher(context) {
         _classCallCheck(this, StorePublisher);
 
         this.stores = {};
         this.listener;
+        this._receviers = {};
     }
 
     _createClass(StorePublisher, [{
         key: 'setStores',
         value: function setStores(stores) {
+            var _this = this;
+
             if (!stores) {
                 return;
             }
-            if (_jsTypeDetector2.default.isArray(store)) {
-                store.forEach(function () {
-                    //store
+            this.release();
+            if (_jsTypeDetector2.default.isArray(stores)) {
+                stores.forEach(function (store) {
+                    _this._receviers[store.getStoreName()] = store.addListener('change', function () {
+                        _this.publish();
+                    });
                 });
             }
         }
     }, {
-        key: 'addListener',
-        value: function addListener(listener) {
+        key: 'setListener',
+        value: function setListener(listener) {
             this.listener = listener;
         }
     }, {
-        key: 'reset',
-        value: function reset() {}
+        key: 'release',
+        value: function release() {
+            for (var key in this._receviers) {
+                this._receviers[key].remove();
+            }
+        }
     }, {
         key: 'publish',
         value: function publish() {
@@ -2241,23 +2251,58 @@ var StorePublisher = function () {
     return StorePublisher;
 }();
 
-function createClass(ReactComponent, stores, getProps) {
-    var BinderComponent = function (_ReactComponent) {
+function fackContextCreator(realContenxt) {
+    function FakeContent() {
+        this.props = Object.assign({}, realContenxt.props);
+    };
+    FakeContent.prototype = realContenxt;
+    return new FakeContent();
+}
+
+function createClass(ReactComponent) {
+    return function (_ReactComponent) {
         _inherits(BinderComponent, _ReactComponent);
 
         function BinderComponent(props, context) {
             _classCallCheck(this, BinderComponent);
 
-            var _this = _possibleConstructorReturn(this, (BinderComponent.__proto__ || Object.getPrototypeOf(BinderComponent)).call(this, props, context));
+            var _this2 = _possibleConstructorReturn(this, (BinderComponent.__proto__ || Object.getPrototypeOf(BinderComponent)).call(this, props, context));
 
-            _this._isMounted = false;
-            return _this;
+            _this2._storePublisher = new StorePublisher(_this2);
+            _this2._storePublisher.setStores(props.bind);
+            _this2._storePublisher.setListener(function () {
+                console.log('sadfasd');
+
+                _this2.forceUpdate();
+            });
+            _this2._isMounted = false;
+            _this2._fakeContext = fackContextCreator(_this2);
+            return _this2;
         }
 
         _createClass(BinderComponent, [{
+            key: '_setPropsToFakeContext',
+            value: function _setPropsToFakeContext(props) {
+                if (props.propsUpdater) {
+                    Object.assign(this._fakeContext.props, props, props.propsUpdater());
+                }
+            }
+        }, {
+            key: 'shouldComponentUpdate',
+            value: function shouldComponentUpdate(nextProps, nextState) {
+                return true;
+            }
+        }, {
             key: 'componentWillReceiveProps',
-            value: function componentWillReceiveProps(nextProps, nextState) {
-                _get(BinderComponent.prototype.__proto__ || Object.getPrototypeOf(BinderComponent.prototype), 'componentWillReceiveProps', this) && _get(BinderComponent.prototype.__proto__ || Object.getPrototypeOf(BinderComponent.prototype), 'componentWillReceiveProps', this).call(this, nextProps, nextState);
+            value: function componentWillReceiveProps(nextProps) {
+                this._storePublisher.setStores(nextProps.bind);
+                _get(BinderComponent.prototype.__proto__ || Object.getPrototypeOf(BinderComponent.prototype), 'componentWillReceiveProps', this) && _get(BinderComponent.prototype.__proto__ || Object.getPrototypeOf(BinderComponent.prototype), 'componentWillReceiveProps', this).call(this);
+            }
+        }, {
+            key: 'componentWillUpdate',
+            value: function componentWillUpdate(nextProps, nextState) {
+                this._setPropsToFakeContext(nextProps);
+                _get(BinderComponent.prototype.__proto__ || Object.getPrototypeOf(BinderComponent.prototype), 'componentWillUpdate', this) && _get(BinderComponent.prototype.__proto__ || Object.getPrototypeOf(BinderComponent.prototype), 'componentWillUpdate', this).call(this, nextProps, nextState);
             }
         }, {
             key: 'componentDidMount',
@@ -2269,12 +2314,13 @@ function createClass(ReactComponent, stores, getProps) {
             key: 'componentWillUnmount',
             value: function componentWillUnmount() {
                 this._isMounted = false;
+                this._storePublisher.release();
                 _get(BinderComponent.prototype.__proto__ || Object.getPrototypeOf(BinderComponent.prototype), 'componentWillUnmount', this) && _get(BinderComponent.prototype.__proto__ || Object.getPrototypeOf(BinderComponent.prototype), 'componentWillUnmount', this).call(this);
             }
         }, {
             key: 'render',
             value: function render() {
-                return _get(BinderComponent.prototype.__proto__ || Object.getPrototypeOf(BinderComponent.prototype), 'render', this).call(this);
+                return _get(BinderComponent.prototype.__proto__ || Object.getPrototypeOf(BinderComponent.prototype), 'render', this).call(this._fakeContext);
             }
         }]);
 

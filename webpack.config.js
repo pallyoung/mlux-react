@@ -3,24 +3,30 @@ var HTMLPlugin = require('html-webpack-plugin');
 var path = require('path');
 module.exports = function (env) {
     env = env || 'dev';
-    var entry = path.resolve(__dirname, 'Binder.js'),
-        dist = __dirname,
-        plugins = []
-
+    var entry = path.resolve(__dirname, 'MluxBinder.js'),
+        dist = __dirname + '/dist',
+        plugins = [],
+        output = {
+            filename: 'MluxBinder.js',
+            path: dist,
+            publicPath: ""
+        }
     if (env === 'dev') {
         entry = __dirname + '/demo/src/index.js';
-        dist = __dirname + '/demo';
+        dist = __dirname + '/demo/dist';
+        output.filename = 'index.js';
+        output.path = dist;
         plugins.push(new HTMLPlugin());
         plugins.push(new webpack.HotModuleReplacementPlugin())
+    } else {
+        output.library = 'MluxBinder';
+        output.libraryTarget = 'umd';
     }
+
     return {
         context: __dirname,
         entry,
-        output: {
-            filename:env === 'dev'? 'index.js':'Binder.js',
-            path: dist,
-            publicPath: ""
-        },
+        output,
         module: {
             rules: [
                 {
@@ -33,7 +39,7 @@ module.exports = function (env) {
         },
         plugins: plugins,
         devServer: {
-            contentBase: __dirname+'/demo/dist',
+            contentBase: __dirname + '/demo/dist',
             compress: true,
             port: 8000,
             hot: true

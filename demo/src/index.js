@@ -1,6 +1,6 @@
 'use strict'
 import Mlux from 'mlux';
-import Binder from './../../Binder';
+import MluxBinder from './../../MluxBinder';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import stores from './stores'
@@ -26,7 +26,7 @@ class UserInfo extends React.Component {
 
 }
 
-var UserInfoBinder = Binder.createClass(UserInfo)
+var UserInfoBinder = MluxBinder.createClass(UserInfo)
 class App extends React.Component {
     constructor(...props) {
         super(...props);
