@@ -1,5 +1,5 @@
+
 'use strict'
-import React, { Component, PropTypes } from 'react';
 import TypeDetector from 'js-type-detector';
 
 var id = 1;

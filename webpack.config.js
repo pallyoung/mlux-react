@@ -3,11 +3,14 @@ var HTMLPlugin = require('html-webpack-plugin');
 var path = require('path');
 module.exports = function (env) {
     env = env || 'dev';
-    var entry = path.resolve(__dirname, 'MluxBinder.js'),
+    var entry = {
+           'MluxBinder': path.resolve(__dirname, 'MluxBinder.js'),
+           'MluxBinder.min':path.resolve(__dirname, 'MluxBinder.js'),
+        },
         dist = __dirname + '/dist',
         plugins = [],
         output = {
-            filename: 'MluxBinder.js',
+            filename: '[name].js',
             path: dist,
             publicPath: ""
         }
@@ -21,6 +24,10 @@ module.exports = function (env) {
     } else {
         output.library = 'MluxBinder';
         output.libraryTarget = 'umd';
+        plugins.push(new webpack.optimize.UglifyJsPlugin({
+            test:'MluxBinder.min',
+            comments:false
+        }))
     }
 
     return {
