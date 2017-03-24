@@ -2,7 +2,7 @@
   "name": "react-mlux-binder",
   "version": "0.2.1",
   "description": "mlux binder auto bind store to component",
-  "main": "MluxBinder.js",
+  "main": "dist/MluxBinder.js",
   "scripts": {
     "test": "null",
     "release": "webpack --env=release",
