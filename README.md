@@ -29,49 +29,14 @@
 ## API Reference
 
 * [Binder](#binder)
-    * [Props](#props)
-    * [Binder.render](#binderrender)
     * [Binder.createClass](#bindercreateclass)
 
-### Binder
 
-Binder组件通过bind属性来自动监测store数据变化，并通过render方法来更新页面。
-
-#### Props
-
-* __bind__ *(Array<Store>)* - bind是一个包含需监听Store的数组。
-* __render__ *(()=>React.Element)* - render是一个function，返回React Element。
 
 ```javascript
 //当testStore的值发生改变的时，Text组件中的内容将会自动更新。
 <Binder bind = {[testStore]} render = {()=><Text>{testStore.value}</Text>}}/>
 ```
-#### Binder.render
-
-render方法返回React Element;
-
-```javascript
-//api
-Binder.render(ReactComponent:Class<React.Component<*,*,*>>, bind: Array<Object>, getProps?: Function): React.Element<*>;
-```
-
-```javascript
-//demo
-class A extends Component {
-    render:()=>{
-        return <Text>name:{this.props.name},value:{store.value}</Text>
-    }
-}
-
-class B extends Component {
-    render:() => {
-        return Binder.render(A,[store],getProps(){
-            return {name:store.name}
-        });
-    }
-}
-```
-
 
 
 #### Binder.createClass
@@ -85,7 +50,7 @@ Binder.createClass(ReactComponent:Class<React.Component<*,*,*>>):Class<*>
 ```javascript
 let BinderA = Binder.createClass(A);
 
-<BinderA binder = {[store]} getProps = {()=>{
+<BinderA bind = {[store]} propsUpdater = {()=>{
     name:store.name
 }} />
 ```
