@@ -13,14 +13,18 @@ class StorePublisher {
     constructor(context) {
         this.stores = {}
         this.listener;
+        this._receviers = {
+
+        };
     }
     setStores(stores) {
         if (!stores) {
             return;
         }
+        this.release();
         if (TypeDetector.isArray(stores)) {
             stores.forEach((store) => {
-                store.addListener('change', () => {
+               this._receviers[store.getStoreName()] =  store.addListener('change', () => {
                     this.publish();
                 })
             })
@@ -30,7 +34,9 @@ class StorePublisher {
         this.listener = listener;
     }
     release() {
-
+        for(var key in this._receviers){
+            this._receviers[key].remove();
+        }
     }
     publish() {
         if (TypeDetector.isFunction(this.listener)) {
@@ -70,6 +76,7 @@ function createClass(ReactComponent) {
             return true;
         }
         componentWillReceiveProps(nextProps) {
+            this._storePublisher.setStores(nextProps.bind);
             super.componentWillReceiveProps && super.componentWillReceiveProps();
         }
         componentWillUpdate(nextProps, nextState) {

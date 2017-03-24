@@ -5,8 +5,8 @@
   "main": "Binder.js",
   "scripts": {
     "test": "null",
-    "release":"webpack --env=release",
-    "dev":"node_modules/.bin/webpack-dev-server"
+    "release": "webpack --env=release",
+    "dev": "node_modules/.bin/webpack-dev-server"
   },
   "repository": {
     "type": "git",
@@ -40,7 +40,7 @@
     "babel-preset-react": "^6.23.0",
     "html-webpack-plugin": "^2.28.0",
     "js-type-detector": "*",
-    "mlux": "^0.2.4",
+    "mlux": "^0.2.5",
     "react": "^15.4.2",
     "react-dom": "^15.4.2",
     "webpack": "^2.3.1",
