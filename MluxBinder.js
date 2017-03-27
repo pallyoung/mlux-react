@@ -60,8 +60,6 @@ function createClass(ReactComponent) {
             this._storePublisher = new StorePublisher(this);
             this._storePublisher.setStores(props.bind);
             this._storePublisher.setListener(() => {
-                            console.log('sadfasd')
-
                 this.forceUpdate()
             });
             this._isMounted = false;
