@@ -280,21 +280,11 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
 var _jsTypeDetector = __webpack_require__(0);
 
 var _jsTypeDetector2 = _interopRequireDefault(_jsTypeDetector);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var id = 1;
 var PERFIX = 'BINDER_STORE_';
@@ -303,132 +293,104 @@ function getId() {
     id++;
     return PERFIX + id;
 }
-
-var StorePublisher = function () {
-    function StorePublisher(context) {
-        _classCallCheck(this, StorePublisher);
-
-        this.stores = {};
-        this.listener;
-        this._receviers = {};
+function assign(dst, src) {
+    for (var o in src) {
+        dst[o] = src[o];
     }
+    return dst;
+}
+function StorePublisher() {
+    this.stores = {};
+    this.listener;
+    this._receviers = {};
+}
 
-    _createClass(StorePublisher, [{
-        key: 'setStores',
-        value: function setStores(stores) {
-            var _this = this;
+StorePublisher.prototype = {
+    constructor: StorePublisher,
+    setStores: function setStores(stores) {
+        var _this = this;
 
-            if (!stores) {
-                return;
-            }
-            this.release();
-            if (_jsTypeDetector2.default.isArray(stores)) {
-                stores.forEach(function (store) {
-                    _this._receviers[store.getStoreName()] = store.addListener('change', function () {
-                        _this.publish();
-                    });
+        if (!stores) {
+            return;
+        }
+        this.release();
+        if (_jsTypeDetector2.default.isArray(stores)) {
+            stores.forEach(function (store) {
+                _this._receviers[store.getStoreName()] = store.addListener('change', function () {
+                    _this.publish();
                 });
-            }
+            });
         }
-    }, {
-        key: 'setListener',
-        value: function setListener(listener) {
-            this.listener = listener;
+    },
+    setListener: function setListener(listener) {
+        this.listener = listener;
+    },
+    release: function release() {
+        for (var key in this._receviers) {
+            this._receviers[key].remove();
         }
-    }, {
-        key: 'release',
-        value: function release() {
-            for (var key in this._receviers) {
-                this._receviers[key].remove();
-            }
+    },
+    publish: function publish() {
+        if (_jsTypeDetector2.default.isFunction(this.listener)) {
+            this.listener();
         }
-    }, {
-        key: 'publish',
-        value: function publish() {
-            if (_jsTypeDetector2.default.isFunction(this.listener)) {
-                this.listener();
-            }
-        }
-    }]);
-
-    return StorePublisher;
-}();
+    }
+};
 
 function fackContextCreator(realContenxt) {
     function FakeContent() {
-        this.props = Object.assign({}, realContenxt.props);
+        this.props = assign({}, realContenxt.props);
     };
     FakeContent.prototype = realContenxt;
     return new FakeContent();
 }
 
 function createClass(ReactComponent) {
-    return function (_ReactComponent) {
-        _inherits(BinderComponent, _ReactComponent);
+    function BinderComponent(props, context) {
+        var _this2 = this;
 
-        function BinderComponent(props, context) {
-            _classCallCheck(this, BinderComponent);
+        ReactComponent.call(this, props, context);
+        this._storePublisher = new StorePublisher(this);
+        this._storePublisher.setStores(props.bind);
+        this._storePublisher.setListener(function () {
+            _this2.forceUpdate();
+        });
+        this._isMounted = false;
+        this._fakeContext = fackContextCreator(this);
+        this._setPropsToFakeContext = function (props) {
+            if (props.propsUpdater) {
+                assign(this._fakeContext.props, props);
+                assign(this._fakeContext.props, props.propsUpdater());
+            }
+        };
+        this.shouldComponentUpdate = function (nextProps, nextState) {
+            return true;
+        };
+        this.componentWillReceiveProps = function (nextProps) {
+            this._storePublisher.setStores(nextProps.bind);
+            BinderComponent.prototype.componentWillReceiveProps && BinderComponent.prototype.componentWillReceiveProps.call(this._fakeContext);
+        };
+        this.componentWillUpdate = function (nextProps, nextState) {
+            this._setPropsToFakeContext(nextProps);
+            BinderComponent.prototype.componentWillUpdate && BinderComponent.prototype.componentWillUpdate.call(this._fakeContext, nextProps, nextState);
+        };
 
-            var _this2 = _possibleConstructorReturn(this, (BinderComponent.__proto__ || Object.getPrototypeOf(BinderComponent)).call(this, props, context));
-
-            _this2._storePublisher = new StorePublisher(_this2);
-            _this2._storePublisher.setStores(props.bind);
-            _this2._storePublisher.setListener(function () {
-                console.log('sadfasd');
-
-                _this2.forceUpdate();
-            });
-            _this2._isMounted = false;
-            _this2._fakeContext = fackContextCreator(_this2);
-            return _this2;
-        }
-
-        _createClass(BinderComponent, [{
-            key: '_setPropsToFakeContext',
-            value: function _setPropsToFakeContext(props) {
-                if (props.propsUpdater) {
-                    Object.assign(this._fakeContext.props, props, props.propsUpdater());
-                }
-            }
-        }, {
-            key: 'shouldComponentUpdate',
-            value: function shouldComponentUpdate(nextProps, nextState) {
-                return true;
-            }
-        }, {
-            key: 'componentWillReceiveProps',
-            value: function componentWillReceiveProps(nextProps) {
-                this._storePublisher.setStores(nextProps.bind);
-                _get(BinderComponent.prototype.__proto__ || Object.getPrototypeOf(BinderComponent.prototype), 'componentWillReceiveProps', this) && _get(BinderComponent.prototype.__proto__ || Object.getPrototypeOf(BinderComponent.prototype), 'componentWillReceiveProps', this).call(this);
-            }
-        }, {
-            key: 'componentWillUpdate',
-            value: function componentWillUpdate(nextProps, nextState) {
-                this._setPropsToFakeContext(nextProps);
-                _get(BinderComponent.prototype.__proto__ || Object.getPrototypeOf(BinderComponent.prototype), 'componentWillUpdate', this) && _get(BinderComponent.prototype.__proto__ || Object.getPrototypeOf(BinderComponent.prototype), 'componentWillUpdate', this).call(this, nextProps, nextState);
-            }
-        }, {
-            key: 'componentDidMount',
-            value: function componentDidMount() {
-                this._isMounted = true;
-                _get(BinderComponent.prototype.__proto__ || Object.getPrototypeOf(BinderComponent.prototype), 'componentDidMount', this) && _get(BinderComponent.prototype.__proto__ || Object.getPrototypeOf(BinderComponent.prototype), 'componentDidMount', this).call(this);
-            }
-        }, {
-            key: 'componentWillUnmount',
-            value: function componentWillUnmount() {
-                this._isMounted = false;
-                this._storePublisher.release();
-                _get(BinderComponent.prototype.__proto__ || Object.getPrototypeOf(BinderComponent.prototype), 'componentWillUnmount', this) && _get(BinderComponent.prototype.__proto__ || Object.getPrototypeOf(BinderComponent.prototype), 'componentWillUnmount', this).call(this);
-            }
-        }, {
-            key: 'render',
-            value: function render() {
-                return _get(BinderComponent.prototype.__proto__ || Object.getPrototypeOf(BinderComponent.prototype), 'render', this).call(this._fakeContext);
-            }
-        }]);
-
-        return BinderComponent;
-    }(ReactComponent);
+        this.componentDidMount = function () {
+            this._isMounted = true;
+            BinderComponent.prototype.componentDidMount && BinderComponent.prototype.componentDidMount.call(this._fakeContext);
+        };
+        this.componentWillUnmount = function () {
+            this._isMounted = false;
+            this._storePublisher.release();
+            BinderComponent.prototype.componentWillUnmount && BinderComponent.prototype.componentWillUnmount.call(this._fakeContext);
+        };
+        this.render = function () {
+            return BinderComponent.prototype.render.call(this._fakeContext);
+        };
+    }
+    BinderComponent.prototype = new ReactComponent({});
+    BinderComponent.prototype.constructor = BinderComponent;
+    return BinderComponent;
 }
 exports.default = {
     createClass: createClass

@@ -9,92 +9,105 @@ function getId() {
     id++;
     return PERFIX + id;
 }
-class StorePublisher {
-    constructor(context) {
-        this.stores = {}
-        this.listener;
-        this._receviers = {
-
-        };
+function assign(dst, src) {
+    for (var o in src) {
+        dst[o] = src[o];
     }
-    setStores(stores) {
+    return dst;
+}
+function StorePublisher() {
+    this.stores = {}
+    this.listener;
+    this._receviers = {
+
+    };
+}
+
+StorePublisher.prototype = {
+    constructor: StorePublisher,
+    setStores: function (stores) {
         if (!stores) {
             return;
         }
         this.release();
         if (TypeDetector.isArray(stores)) {
             stores.forEach((store) => {
-               this._receviers[store.getStoreName()] =  store.addListener('change', () => {
+                this._receviers[store.getStoreName()] = store.addListener('change', () => {
                     this.publish();
                 })
             })
         }
-    }
-    setListener(listener) {
+    },
+    setListener: function (listener) {
         this.listener = listener;
-    }
-    release() {
-        for(var key in this._receviers){
+    },
+    release: function () {
+        for (var key in this._receviers) {
             this._receviers[key].remove();
         }
-    }
-    publish() {
+    },
+    publish: function () {
         if (TypeDetector.isFunction(this.listener)) {
             this.listener();
         }
     }
 }
 
-function fackContextCreator(realContenxt) {
-    function FakeContent() {
-        this.props = Object.assign({}, realContenxt.props);
+
+function fackContextCreator(realContext) {
+    function FakeContext() {
+        this.props = assign({}, realContext.props);
     };
-    FakeContent.prototype = realContenxt;
-    return new FakeContent();
+    FakeContext.prototype = realContext;
+    return new FakeContext();
 }
 
 function createClass(ReactComponent) {
-    return class BinderComponent extends ReactComponent {
-        constructor(props, context) {
-            super(props, context);
-            this._storePublisher = new StorePublisher(this);
-            this._storePublisher.setStores(props.bind);
-            this._storePublisher.setListener(() => {
-                this.forceUpdate()
-            });
-            this._isMounted = false;
-            this._fakeContext = fackContextCreator(this);
-        }
-        _setPropsToFakeContext(props) {
+    function BinderComponent(props, context) {
+        ReactComponent.call(this, props, context);
+        this._storePublisher = new StorePublisher(this);
+        this._storePublisher.setStores(props.bind);
+        this._storePublisher.setListener(() => {
+            this.forceUpdate()
+        });
+        this._isMounted = false;
+        this._fakeContext = fackContextCreator(this);
+        this._setPropsToFakeContext = function (props) {
             if (props.propsUpdater) {
-                Object.assign(this._fakeContext.props,props, props.propsUpdater());
+                assign(this._fakeContext.props, props);
+                assign(this._fakeContext.props, props.propsUpdater());
             }
         }
-        shouldComponentUpdate(nextProps, nextState) {
+        this.shouldComponentUpdate = function (nextProps, nextState) {
             return true;
         }
-        componentWillReceiveProps(nextProps) {
+        this.componentWillReceiveProps =function (nextProps) {
             this._storePublisher.setStores(nextProps.bind);
-            super.componentWillReceiveProps && super.componentWillReceiveProps();
+            BinderComponent.prototype.componentWillReceiveProps && BinderComponent.prototype.componentWillReceiveProps.call(this._fakeContext);
         }
-        componentWillUpdate(nextProps, nextState) {
+        this.componentWillUpdate=function(nextProps, nextState) {
             this._setPropsToFakeContext(nextProps);
-            super.componentWillUpdate && super.componentWillUpdate(nextProps, nextState);
+            BinderComponent.prototype.componentWillUpdate && BinderComponent.prototype.componentWillUpdate.call(this._fakeContext, nextProps, nextState);
         }
-        
-        componentDidMount() {
+
+        this.componentDidMount=function() {
             this._isMounted = true;
-            super.componentDidMount && super.componentDidMount();
+            BinderComponent.prototype.componentDidMount && BinderComponent.prototype.componentDidMount.call(this._fakeContext);
         }
-        componentWillUnmount() {
+        this.componentWillUnmount=function() {
             this._isMounted = false;
             this._storePublisher.release();
-            super.componentWillUnmount && super.componentWillUnmount();
+            BinderComponent.prototype.componentWillUnmount && BinderComponent.prototype.componentWillUnmount.call(this._fakeContext);
         }
-        render() {
-            return super.render.call(this._fakeContext);
+        this.render = function() {
+            return BinderComponent.prototype.render.call(this._fakeContext);
         }
+
     }
+    BinderComponent.prototype = new ReactComponent({});
+    BinderComponent.prototype.constructor = BinderComponent;
+    return BinderComponent;
+   
 }
 export default {
     createClass
